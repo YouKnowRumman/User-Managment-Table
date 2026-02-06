@@ -1,0 +1,30 @@
+﻿@model IEnumerable<ApplicationUser>
+@using task4.Models
+
+<form method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="all" /></th>
+                <th>Email</th>
+                <th>Last Login</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td><input type="checkbox" name="ids" value="@u.Id" /></td>
+                    <td>@u.Email</td>
+                    <td>@u.LastLoginTime</td>
+                    <td>@(u.IsBlocked ? "Blocked" : "Active")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button formaction="/Users/Block">Block</button>
+    <button formaction="/Users/Unblock">Unblock</button>
+    <button formaction="/Users/Delete">Delete</button>
+</form>
