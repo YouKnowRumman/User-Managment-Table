@@ -1,30 +1,205 @@
-﻿@model IEnumerable<ApplicationUser>
-@using task4.Models
+﻿
+@model IEnumerable<table.Models.ApplicationUser>
 
-<form method="post">
-    <table class="table">
-        <thead>
-            <tr>
-                <th><input type="checkbox" id="all" /></th>
-                <th>Email</th>
-                <th>Last Login</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var u in Model)
+@{
+    // nota bene: provide basic client-side scripts for selection logic below
+}
+
+<form method="post" id="usersForm">
+    @{
+        // compute welcome message depending on current user and their last login/registration
+        var userManager = Context.RequestServices.GetService(typeof(Microsoft.AspNetCore.Identity.UserManager<table.Models.ApplicationUser>)) as Microsoft.AspNetCore.Identity.UserManager<table.Models.ApplicationUser>;
+        var currUser = userManager != null ? userManager.GetUserAsync(User).Result : null;
+        string welcome = null;
+        if (currUser != null)
+        {
+            if (!currUser.LastLoginTime.HasValue || (currUser.LastLoginTime.Value - currUser.RegistrationTime).TotalSeconds < 10)
             {
-                <tr>
-                    <td><input type="checkbox" name="ids" value="@u.Id" /></td>
-                    <td>@u.Email</td>
-                    <td>@u.LastLoginTime</td>
-                    <td>@(u.IsBlocked ? "Blocked" : "Active")</td>
-                </tr>
+                welcome = $"Welcome, {currUser.Name}! Thanks for registering.";
             }
-        </tbody>
-    </table>
+            else
+            {
+                welcome = $"Welcome back, {currUser.Name}! Last seen: " + (currUser.LastLoginTime.HasValue ? currUser.LastLoginTime.Value.ToLocalTime().ToString("g") : "-" );
+            }
+        }
+    }
+    @if(!string.IsNullOrEmpty(welcome)) {
+        <div class="alert alert-info rounded-3 d-flex align-items-center" role="status">
+            <div style="font-size:20px;margin-right:12px;">🎉</div>
+            <div>
+                <div class="fw-semibold">@welcome</div>
+                <div class="small text-muted">You can manage users below. Use the toolbar to block, unblock or remove users.</div>
+            </div>
+        </div>
+    }
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3 toolbar-scroll">
+        <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" style="min-width:320px;">
+            <div class="btn-group me-2" role="group">
+                <!-- first button: icon + text -->
+                <button type="submit" formaction="/Users/Block" class="btn btn-outline-primary me-1" id="btnBlock" disabled>
+                    <span aria-hidden="true">🔒</span>
+                    <span class="ms-1">Block</span>
+                </button>
+                <!-- other buttons: icons only -->
+                <button type="submit" formaction="/Users/Unblock" class="btn btn-outline-success me-1" id="btnUnblock" disabled title="Unblock">
+                    <span aria-hidden="true">🔓</span>
+                </button>
+                <button type="submit" formaction="/Users/Delete" class="btn btn-outline-danger me-1" id="btnDelete" disabled title="Delete">
+                    <span aria-hidden="true">🗑️</span>
+                </button>
+                <button type="submit" formaction="/Users/DeleteUnverified" class="btn btn-outline-danger" id="btnDeleteUnverifiedAlways" title="Delete unverified">
+                    <span aria-hidden="true">🚫</span>
+                </button>
+            </div>
+            <div class="ms-3">
+                <input class="form-control form-control-sm" placeholder="Filter" id="searchBox" aria-label="Filter users" style="min-width:180px;" />
+            </div>
+        </div>
+        
+    </div>
 
-    <button formaction="/Users/Block">Block</button>
-    <button formaction="/Users/Unblock">Unblock</button>
-    <button formaction="/Users/Delete">Delete</button>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered rounded-3 shadow-sm responsive-table">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:40px; text-align:center"><input type="checkbox" id="selectAll" /></th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th style="width:120px">Status</th>
+                    <th style="width:200px">Last Login (UTC)</th>
+                </tr>
+            </thead>
+            <tbody id="usersTable">
+                @foreach (var u in Model.OrderByDescending(x => x.LastLoginTime))
+                {
+                    <tr>
+                        <td class="text-center align-middle" data-label="Select"><input type="checkbox" name="ids" value="@u.Id" class="rowCheckbox" aria-label="Select user @u.Email" /></td>
+                        <td class="align-middle" data-label="Name">
+                            @{ var initials = ""; if(!string.IsNullOrWhiteSpace(u.Name)){ var parts = u.Name.Trim().Split(' '); initials = string.Concat(parts.Where(p=>!string.IsNullOrEmpty(p)).Select(p=>p[0])).ToUpper(); if(initials.Length>2) initials = initials.Substring(0,2); } }
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div class="avatar" aria-hidden="true">@initials</div>
+                                <div class="d-flex flex-column">
+                                    <div class="fw-semibold">@u.Name</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle" data-label="Email">@u.Email</td>
+                        <td class="align-middle" data-label="Status">
+                            @if(u.Status == table.Models.UserStatus.Active) {
+                                <span class="badge bg-success">Active</span>
+                            } else if(u.Status == table.Models.UserStatus.Blocked) {
+                                <span class="badge bg-danger">Blocked</span>
+                            } else {
+                                <span class="badge bg-secondary">Unverified</span>
+                            }
+                        </td>
+                        <td class="align-middle" data-label="Last Login" data-last="@(u.LastLoginTime.HasValue ? u.LastLoginTime.Value.ToUniversalTime().ToString("o") : string.Empty)">
+                            @if(u.LastLoginTime.HasValue)
+                            {
+                                var dt = u.LastLoginTime.Value.ToUniversalTime();
+                                <span class="lastseen-placeholder">@dt.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </form>
+
+<script>
+    // important: minimal JS for select-all and toolbar enable/disable
+    (function(){
+        const selectAll = document.getElementById('selectAll');
+        const rowCheckboxes = () => Array.from(document.querySelectorAll('.rowCheckbox'));
+        const buttons = ['btnBlock','btnUnblock','btnDelete','btnDeleteUnverified'].map(id => document.getElementById(id));
+        const deleteUnverifiedAlways = document.getElementById('btnDeleteUnverifiedAlways');
+
+        function updateButtons(){
+            const any = rowCheckboxes().some(cb => cb.checked);
+            // first button (Block) shows icon+text and should follow selection
+            if(buttons[0]) buttons[0].disabled = !any;
+            // other buttons are icons only and also follow selection
+            for(let i=1;i<buttons.length;i++){ if(buttons[i]) buttons[i].disabled = !any; }
+            // deleteUnverifiedAlways remains enabled
+            if(deleteUnverifiedAlways) deleteUnverifiedAlways.disabled = false;
+        }
+
+        // initial state
+        updateButtons();
+
+        selectAll?.addEventListener('change', function(){
+            rowCheckboxes().forEach(cb => cb.checked = selectAll.checked);
+            updateButtons();
+        });
+
+        document.addEventListener('change', function(e){
+            if(e.target && e.target.classList && e.target.classList.contains('rowCheckbox')){
+                updateButtons();
+                const all = rowCheckboxes();
+                selectAll.checked = all.length>0 && all.every(cb=>cb.checked);
+            }
+        });
+
+        // search box simple filter
+        const searchBox = document.getElementById('searchBox');
+        searchBox?.addEventListener('input', function(){
+            const term = this.value.toLowerCase();
+            document.querySelectorAll('#usersTable tr').forEach(tr=>{
+                tr.style.display = term ? (tr.innerText.toLowerCase().includes(term) ? '' : 'none') : '';
+            });
+        });
+
+        // delete unverified always: if user clicks the always-enabled button without selection,
+        // the form will be submitted without ids and server will delete all unverified users.
+        if(deleteUnverifiedAlways){
+            deleteUnverifiedAlways.addEventListener('click', function(e){
+                // no-op client side: allow the form to submit to /Users/DeleteUnverified without ids
+            });
+        }
+
+    // enhance Last seen: compute relative times and render sparklines
+    function timeAgoText(date) {
+        const seconds = Math.floor((Date.now() - date) / 1000);
+        if (seconds < 60) return 'less than a minute ago';
+        if (seconds < 3600) return Math.floor(seconds/60) + ' minutes ago';
+        if (seconds < 86400) return Math.floor(seconds/3600) + ' hours ago';
+        if (seconds < 604800) return Math.floor(seconds/86400) + ' days ago';
+        return new Date(date).toLocaleDateString();
+    }
+
+    document.querySelectorAll('#usersTable tr').forEach(tr=>{
+        const cell = tr.querySelector('td[data-last]');
+        if(!cell) return;
+        const iso = cell.getAttribute('data-last');
+        if(iso){
+            const dt = new Date(iso);
+            cell.innerHTML = '';
+            const rel = document.createElement('div');
+            rel.textContent = timeAgoText(dt);
+            rel.style.marginBottom = '6px';
+            const spark = document.createElement('div');
+            spark.className = 'sparkline';
+            // deterministic pseudo-random bars based on timestamp
+            let seed = dt.getTime();
+            for(let i=0;i<6;i++){
+                seed = (seed * 9301 + 49297) % 233280;
+                const val = 3 + Math.abs(seed % 8);
+                const sp = document.createElement('span');
+                sp.style.height = (val * 4) + 'px';
+                spark.appendChild(sp);
+            }
+            const wrapper = document.createElement('div');
+            wrapper.className = 'lastseen-tooltip';
+            wrapper.title = dt.toUTCString();
+            wrapper.appendChild(rel);
+            wrapper.appendChild(spark);
+            cell.appendChild(wrapper);
+        }
+    });
+    })();
+</script>

@@ -1,19 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using task4.Models;
+using table.Models;
 
-namespace task4.Controllers
+namespace table.Controllers
 {
     public class HomeController : Controller
     {
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
+            // Redirect to users list (Razor Pages project uses Users controller as main page)
+            return RedirectToAction("Index", "Users");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,4 +1,4 @@
-namespace task4.Models
+namespace table.Models
 {
     public class ErrorViewModel
     {

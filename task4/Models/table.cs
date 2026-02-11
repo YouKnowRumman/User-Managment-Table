@@ -1,12 +1,12 @@
-﻿namespace Table.Models
+﻿namespace table.Models
 {
     public class Table
     {
         public int Id { get; set; }
-        public string name { get; set; }
-        public string email { get; set; }
-        public string status { get; set; }
-        public string lastSeen { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Status { get; set; }
+        public string LastSeen { get; set; }
 
         public Table()
         {

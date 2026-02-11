@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Runtime.ConstrainedExecution;
+using table.Models;
 
 public class BaseController : Controller
 {
@@ -16,7 +18,7 @@ public class BaseController : Controller
         if (User.Identity?.IsAuthenticated == true)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user.IsBlocked)
+            if (user.Status == UserStatus.Blocked)
             {
                 context.Result = RedirectToAction("Logout", "Account");
             }

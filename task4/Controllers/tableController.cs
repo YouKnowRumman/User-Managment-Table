@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Table.Models;
+using table.Models;
 
 namespace table.Controllers
 {
@@ -47,7 +47,7 @@ namespace table.Controllers
         // POST: table/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,name,email,status,lastSeen")] Table.Models.Table userRecord)
+        public async Task<IActionResult> Create([Bind("Id,name,email,status,lastSeen")] table.Models.Table userRecord)
         {
             if (ModelState.IsValid)
             {
@@ -72,7 +72,7 @@ namespace table.Controllers
         // POST: table/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,name,email,status,lastSeen")] Table.Models.Table userRecord)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,name,email,status,lastSeen")] table.Models.Table userRecord)
         {
             if (id != userRecord.Id) return NotFound();
 

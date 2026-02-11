@@ -1,0 +1,126 @@
+/* Custom styles to approximate the provided mockups */
+
+/* Login/register two-column layout */
+.auth-wrapper {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+/* Toolbar styles to match provided design */
+.btn-toolbar .btn { border-radius:8px; }
+.btn-outline-primary { border-color:#cfe6ff; color:#0d6efd; background:#fff; }
+.btn-outline-primary:hover { background:#e9f7ff; }
+.btn-outline-success { border-color:#cfeadf; color:#10b981; }
+.btn-outline-danger { border-color:#ffd7d9; color:#ef4444; }
+
+/* Header title styling in navbar */
+.navbar .navbar-brand { font-weight:700; font-size:1.05rem; }
+
+/* Tighter table row spacing */
+.table td, .table th { padding: 0.9rem; }
+.auth-form {
+  flex: 1 1 40%;
+  max-width: 420px;
+  padding: 2rem 1rem;
+}
+.auth-illustration {
+  flex: 1 1 55%;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.02) inset;
+  min-height: 520px;
+}
+
+/* Login card styling */
+.auth-card {
+  background: transparent;
+}
+.auth-card h2 { font-weight: 600; font-size: 0.95rem; }
+
+/* Buttons */
+.btn-primary.custom-login {
+  background: #0d6efd; /* bright blue */
+  border-color: #0d6efd;
+}
+
+/* Toolbar icon buttons spacing and look */
+.toolbar .btn { margin-right: 8px; }
+.btn-icon-only { width: 42px; height: 38px; display:inline-flex; align-items:center; justify-content:center; }
+
+/* sparkline bars */
+.sparkline { display:inline-flex; align-items:flex-end; gap:3px; }
+.sparkline span { display:inline-block; width:6px; background:#5aa8ff; border-radius:2px; }
+
+/* visually-hidden helper (Bootstrap has it but keep fallback) */
+.visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
+
+/* Table tweaks: make header lighter like mock */
+.table thead th { background: #f8f9fa; }
+
+/* Mobile: keep table layout identical to desktop but scale down spacing and fonts */
+@media (max-width: 767px) {
+  /* keep header visible and preserve table semantics */
+  .responsive-table { display: table !important; width: 100% !important; border-collapse: collapse !important; }
+  .responsive-table thead { display: table-header-group !important; }
+  .responsive-table tbody { display: table-row-group !important; }
+  .responsive-table tr { display: table-row !important; }
+  .responsive-table th, .responsive-table td { display: table-cell !important; }
+
+  /* reduce padding and font size to fit more columns on small screens */
+  .table td, .table th { padding: 0.45rem; font-size: 0.86rem; }
+  .avatar { width:32px;height:32px;font-size:13px; }
+  .sparkline span { width:5px; }
+  .btn-toolbar { gap:6px; }
+  .btn-toolbar .form-control-sm { min-width:120px; }
+
+  /* allow cell contents to wrap instead of stacking vertically */
+  .responsive-table td { white-space: normal; overflow-wrap: anywhere; }
+  /* keep table cells on one line and allow horizontal scroll instead of wrapping */
+  .responsive-table td, .responsive-table th { white-space: nowrap; }
+}
+
+/* Toolbar horizontal scrolling on very small screens */
+.toolbar-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.toolbar-scroll .btn-group { white-space: nowrap; }
+
+/* Make table width fit content so horizontal scrolling is possible on small screens */
+.responsive-table { table-layout: auto; min-width: max-content; }
+
+/* Prevent name/email from wrapping so they stay on one line (user can scroll horizontally to view full text) */
+td[data-label="Name"], td[data-label="Email"] { white-space: nowrap; }
+
+/* Allow table responsive container to horizontally scroll */
+.table-responsive { overflow-x: auto; }
+
+/* Ensure navbar right-aligned login area */
+.navbar .navbar-nav.ms-auto { margin-left: auto !important; }
+.navbar .navbar-nav .nav-item { display: flex; align-items: center; }
+
+/* table rounded and shadow already applied; make rows hoverable */
+.table.table-striped.table-bordered.rounded-3 tbody tr:hover { background: #f1f7ff; }
+
+/* Improve table spacing and make sure cells wrap nicely */
+.table td, .table th { vertical-align: middle; }
+.table td { white-space: normal; }
+
+/* toolbar spacing for small screens */
+@media (max-width: 767px) {
+  .btn-toolbar { width:100%; display:flex; flex-wrap:wrap; gap:8px; }
+  .btn-group { width:100%; display:flex; justify-content:flex-start; gap:8px; }
+}
+
+/* Avatar initials */
+.avatar { width:40px;height:40px;border-radius:50%;background:#e9f5ff;color:#0d6efd;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:2px solid rgba(13,110,253,0.08); }
+
+@media (max-width: 767px) {
+  .avatar { width:36px;height:36px;font-size:14px; }
+}
+
+/* Filter input in toolbar */
+.toolbar-filter { max-width: 240px; }
+
+/* Last seen tooltip style fallback */
+.lastseen-tooltip { position: relative; }
+.lastseen-tooltip .tooltip-inner { background: #000; color: #fff; padding:6px 8px; border-radius:4px; }
