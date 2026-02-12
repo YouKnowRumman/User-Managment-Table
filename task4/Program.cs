@@ -5,21 +5,20 @@ using task4.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Build the PostgreSQL connection string from Render environment variables
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+// --- Database ---
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? throw new Exception("DB_HOST not set");
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "Task4DB";
-var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
-var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "PostgreSQL@Password01";
+var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? throw new Exception("DB_NAME not set");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? throw new Exception("DB_USER not set");
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? throw new Exception("DB_PASSWORD not set");
 
 var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
 
-// Use PostgreSQL provider
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// Identity configuration
+// --- Identity ---
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -33,21 +32,25 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 builder.Services.AddControllersWithViews();
 
-// Configure SMTP email sender from environment variables
+// --- SMTP Email ---
+var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com";
+var smtpPort = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
+var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER") ?? throw new Exception("SMTP_USER not set");
+var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new Exception("SMTP_PASSWORD not set");
+
 builder.Services.Configure<SmtpOptions>(options =>
 {
-    options.Host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com";
-    options.Port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "587");
-    options.User = Environment.GetEnvironmentVariable("SMTP_USER") ?? "";
-    options.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
+    options.Host = smtpHost;
+    options.Port = smtpPort;
+    options.User = smtpUser;
+    options.Password = smtpPassword;
     options.EnableSsl = true;
 });
-
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, EmailSender>();
 
+// --- Middleware & Routing ---
 var app = builder.Build();
 
-// Configure middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -60,8 +63,8 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseMiddleware<BlockedUserMiddleware>();
 app.UseAuthorization();
@@ -69,6 +72,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Users}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 app.Run();
